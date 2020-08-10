@@ -48,7 +48,7 @@ do_source() {
 }
 
 handle_chpwd() {
-  if [[ "$OLDPWD" == "$PWD" ]]; then
+  if [[ "$OLDPWD" == "$PWD" && -z $1 ]]; then
     return
   fi
 
@@ -68,4 +68,4 @@ handle_chpwd() {
 autoload -U add-zsh-hook
 add-zsh-hook chpwd handle_chpwd
 
-handle_chpwd
+handle_chpwd true
