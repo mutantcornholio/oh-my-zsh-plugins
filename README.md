@@ -10,7 +10,8 @@ cp -r plugins/* "$ZSH_CUSTOM/plugins"
 
 # Plugins:
 ## use-dotenv
-Loads `.env` file from current dir to your environment. Reverts the changes when you leave directory.
+Loads `.env` file from current dir to your environment. Reverts the changes when you leave directory.  
+Updates environment when `.env` file changes.  
 
 (your `.zshrc`)
 ```sh

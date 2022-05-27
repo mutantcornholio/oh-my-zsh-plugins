@@ -7,6 +7,7 @@ declare -A ZSH_USE_DOTENV_PLUGIN_ORIGINAL_ENV
 declare -A ZSH_USE_DOTENV_PLUGIN_ENV_DIFF
 
 ZSH_USE_DOTENV_PLUGIN_PROMPT=""
+ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME=
 
 ## Functions
 capture_env() {
@@ -40,11 +41,26 @@ restore_env() {
       fi
     fi
   done
+
+  ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME=
 }
 
 do_source() {
   setopt localoptions allexport
+  ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME="$(stat -c %Y "$ZSH_DOTENV_FILE")"
   source $ZSH_DOTENV_FILE
+}
+
+handle_precmd() {
+  if [[ ! -f "$PWD/$ZSH_DOTENV_FILE" ]]; then
+    return
+  fi
+
+  local new_mtime="$(stat -c %Y "$ZSH_DOTENV_FILE")"
+  if [ "$new_mtime" != "$ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME" ]; then
+    restore_env
+    do_source
+  fi
 }
 
 handle_chpwd() {
@@ -67,5 +83,7 @@ handle_chpwd() {
 
 autoload -U add-zsh-hook
 add-zsh-hook chpwd handle_chpwd
+add-zsh-hook precmd handle_precmd
+add-zsh-hook preexec handle_precmd
 
 handle_chpwd true
