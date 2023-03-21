@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # Filename of the dotenv file to look for
-: ${ZSH_DOTENV_FILE:=.env}
+: "${ZSH_DOTENV_FILE:=.env}"
 
 declare -A ZSH_USE_DOTENV_PLUGIN_ORIGINAL_ENV
 declare -A ZSH_USE_DOTENV_PLUGIN_ENV_DIFF
@@ -45,9 +45,17 @@ restore_env() {
   ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME=
 }
 
+get_mtime() {
+  if strings "$(which stat)" | grep -q 'GNU coreutils'; then
+    stat -c %Y "$1"
+  else
+    stat -f %m "$1"
+  fi
+}
+
 do_source() {
   setopt localoptions allexport
-  ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME="$(stat -c %Y "$ZSH_DOTENV_FILE")"
+  ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME="$(get_mtime "$ZSH_DOTENV_FILE")"
   source $ZSH_DOTENV_FILE
 }
 
@@ -56,7 +64,7 @@ handle_precmd() {
     return
   fi
 
-  local new_mtime="$(stat -c %Y "$ZSH_DOTENV_FILE")"
+  local new_mtime="$(get_mtime "$ZSH_DOTENV_FILE")"
   if [ "$new_mtime" != "$ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME" ]; then
     restore_env
     do_source
