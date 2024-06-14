@@ -78,17 +78,20 @@ handle_precmd() {
     # Dotenv file was deleted/moved
     if [[ ! -f "$PWD/$ZSH_DOTENV_FILE" ]]; then
       restore_env
-      return
     # Directory change to another dir with dotenv file
     elif [[ "$ZSH_USE_DOTENV_PLUGIN_DOTENV_ACTIVE_FILE" != "$PWD/$ZSH_DOTENV_FILE" ]]; then
       restore_env
       add_env
-      return
+    else
+      local new_mtime="$(get_mtime "$ZSH_DOTENV_FILE")"
+      if [[ "$new_mtime" != "$ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME" ]]; then
+        restore_env
+        add_env
+      fi
     fi
+  elif [[ -f "$PWD/$ZSH_DOTENV_FILE" ]]; then
+    add_env
   fi
-
-  local new_mtime="$(get_mtime "$ZSH_DOTENV_FILE")"
-  [[ "$new_mtime" != "$ZSH_USE_DOTENV_PLUGIN_DOTENV_MTIME" ]] && add_env
 }
 
 autoload -U add-zsh-hook
